@@ -16,7 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -386,12 +386,12 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
     public void savePre(Configures Configures) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         Configures.setGmtCreated(date);
         Configures.setCreator(operator.getUsername());
         Configures.setCreatorCode(operator.getUserId());
-        Configures.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        Configures.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         Configures.setGmtModified(date);
 
         Configures.setModifier(operator.getUsername());
@@ -412,7 +412,7 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         Configures.setGmtModified(date);
         Configures.setModifier(operator.getUsername());

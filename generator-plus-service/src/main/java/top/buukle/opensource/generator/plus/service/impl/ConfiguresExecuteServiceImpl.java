@@ -7,8 +7,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -222,12 +223,12 @@ public class ConfiguresExecuteServiceImpl extends ServiceImpl<ConfiguresExecuteM
     public void savePre(ConfiguresExecute ConfiguresExecute) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         ConfiguresExecute.setGmtCreated(date);
         ConfiguresExecute.setCreator(operator.getUsername());
         ConfiguresExecute.setCreatorCode(operator.getUserId());
-        ConfiguresExecute.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        ConfiguresExecute.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         ConfiguresExecute.setGmtModified(date);
 
         ConfiguresExecute.setModifier(operator.getUsername());
@@ -248,7 +249,7 @@ public class ConfiguresExecuteServiceImpl extends ServiceImpl<ConfiguresExecuteM
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         ConfiguresExecute.setGmtModified(date);
         ConfiguresExecute.setModifier(operator.getUsername());

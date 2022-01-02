@@ -8,8 +8,9 @@ import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -243,12 +244,12 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
     public void savePre(Archetypes archetypes) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         archetypes.setGmtCreated(date);
         archetypes.setCreator(operator.getUsername());
         archetypes.setCreatorCode(operator.getUserId());
-        archetypes.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        archetypes.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         archetypes.setGmtModified(date);
 
         archetypes.setModifier(operator.getUsername());
@@ -269,7 +270,7 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         archetypes.setGmtModified(date);
         archetypes.setModifier(operator.getUsername());

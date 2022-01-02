@@ -7,7 +7,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -226,12 +226,12 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
     public void savePre(Datasources datasources) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         datasources.setGmtCreated(date);
         datasources.setCreator(operator.getUsername());
         datasources.setCreatorCode(operator.getUserId());
-        datasources.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        datasources.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         datasources.setGmtModified(date);
 
         datasources.setModifier(operator.getUsername());
@@ -252,7 +252,7 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         datasources.setGmtModified(date);
         datasources.setModifier(operator.getUsername());

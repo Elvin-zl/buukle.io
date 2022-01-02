@@ -7,8 +7,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
@@ -222,12 +222,12 @@ public class ArchetypesExecuteServiceImpl extends ServiceImpl<ArchetypesExecuteM
     public void savePre(ArchetypesExecute archetypesExecute) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         archetypesExecute.setGmtCreated(date);
         archetypesExecute.setCreator(operator.getUsername());
         archetypesExecute.setCreatorCode(operator.getUserId());
-        archetypesExecute.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        archetypesExecute.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         archetypesExecute.setGmtModified(date);
 
         archetypesExecute.setModifier(operator.getUsername());
@@ -248,7 +248,7 @@ public class ArchetypesExecuteServiceImpl extends ServiceImpl<ArchetypesExecuteM
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         archetypesExecute.setGmtModified(date);
         archetypesExecute.setModifier(operator.getUsername());
@@ -270,5 +270,5 @@ public class ArchetypesExecuteServiceImpl extends ServiceImpl<ArchetypesExecuteM
     }
 
     /*------------------------------------------------------↑↑↑↑通用可定制代码↑↑↑↑-------------------------------------------------------------*/
-    
+
 }

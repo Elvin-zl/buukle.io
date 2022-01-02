@@ -8,8 +8,9 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -250,12 +251,12 @@ public class TemplatesServiceImpl extends ServiceImpl<TemplatesMapper, Templates
     public void savePre(Templates Templates) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         Templates.setGmtCreated(date);
         Templates.setCreator(operator.getUsername());
         Templates.setCreatorCode(operator.getUserId());
-        Templates.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        Templates.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         Templates.setGmtModified(date);
 
         Templates.setModifier(operator.getUsername());
@@ -276,7 +277,7 @@ public class TemplatesServiceImpl extends ServiceImpl<TemplatesMapper, Templates
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         Templates.setGmtModified(date);
         Templates.setModifier(operator.getUsername());
@@ -355,7 +356,7 @@ public class TemplatesServiceImpl extends ServiceImpl<TemplatesMapper, Templates
         updateWrapper.eq("templates_group_id",templatesGroupId);
 
         Date date = new Date();
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         updateWrapper.set("gmt_modified",date);
         updateWrapper.set("modifier",operator.getUsername());

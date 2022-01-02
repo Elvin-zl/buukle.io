@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
-import top.buukle.login.cube.session.UserDTO;
+
 import top.buukle.login.cube.session.tenant.TenantHelper;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
@@ -243,12 +244,12 @@ public class TemplatesGroupServiceImpl extends ServiceImpl<TemplatesGroupMapper,
     public void savePre(TemplatesGroup templatesGroup) {
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         templatesGroup.setGmtCreated(date);
         templatesGroup.setCreator(operator.getUsername());
         templatesGroup.setCreatorCode(operator.getUserId());
-        templatesGroup.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getTenantId())?"-1":operator.getTenantId()));
+        templatesGroup.setTenantId(Integer.parseInt(StringUtil.isEmpty(operator.getMainTenant())?"-1":operator.getMainTenant()));
         templatesGroup.setGmtModified(date);
 
         templatesGroup.setModifier(operator.getUsername());
@@ -269,7 +270,7 @@ public class TemplatesGroupServiceImpl extends ServiceImpl<TemplatesGroupMapper,
 
         Date date = new Date();
 
-        UserDTO operator = SessionUtils.getOperator();
+        OperatorUserDTO operator = SessionUtils.getOperator();
 
         templatesGroup.setGmtModified(date);
         templatesGroup.setModifier(operator.getUsername());
