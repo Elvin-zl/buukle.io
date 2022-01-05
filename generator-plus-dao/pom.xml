@@ -23,6 +23,11 @@
             <artifactId>generator-plus-entity</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>top.buukle.opensource</groupId>
+            <artifactId>generator-plus-dtvo</artifactId>
+            <version>1.0.0-RELEASE</version>
+        </dependency>
         <!--dao-->
         <dependency>
             <groupId>mysql</groupId>

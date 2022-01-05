@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
 
 import top.buukle.login.cube.session.tenant.TenantHelper;

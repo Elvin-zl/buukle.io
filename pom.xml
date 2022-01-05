@@ -321,7 +321,6 @@
     <module>generator-plus-controller</module>
     <module>generator-plus-dtvo</module>
     <module>generator-plus-api</module>
-    <module>generator-plus-client</module>
     <module>generator-plus-commons</module>
     <module>generator-plus-utils</module>
   </modules>
