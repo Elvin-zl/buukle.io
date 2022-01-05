@@ -11,7 +11,7 @@
 #### 演示地址
 [generator-plus](http://generator-plus.buukle.top/generator-plus/index.html#/gen/configures/configures-list)
 
-测试账号 : admin / admin 
+测试账号 : buukle / buukle 
 
 #### 使用说明
 
