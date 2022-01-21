@@ -26,6 +26,9 @@ spec:
         - containerPort: 80
           protocol: TCP
         imagePullPolicy: Always
+        env:
+          - name: env
+            value: $ENV
         volumeMounts:
           - name: volume-raufv3
             mountPath: /opt/temp
