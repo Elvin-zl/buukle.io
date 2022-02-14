@@ -23,17 +23,6 @@
             <artifactId>generator-plus-dao</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>top.buukle</groupId>
-            <artifactId>login-cube-session</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <!--arche-->
-        <dependency>
-            <groupId>top.buukle</groupId>
-            <artifactId>buukle-cloud-starter-apollo</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
         <!--service-->
         <dependency>
             <groupId>com.baomidou</groupId>
