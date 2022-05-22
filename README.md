@@ -6,7 +6,7 @@
 
 原型管理 : 集中管理自定义的archetype ,并能一键在线直接根据archetype生成项目代码
 
-逆向管理 : 可自由灵活配置多数据源,自定义模板, 并根据模板一键在线生成前后端代码,支持一键导入本地项目结构
+逆向管理 : 可自由灵活配置多数据源,自定义模板,并根据模板一键在线生成前后端代码,支持一键导入本地项目结构
 
 #### 演示地址
 [generator-plus](http://generator-plus.buukle.top/generator-plus/index.html#/gen/configures/configures-list)
