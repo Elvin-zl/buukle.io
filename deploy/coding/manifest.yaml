@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ${parameters.KKE_PROJECT_NAME}
+  name: ${parameters.HUBER_APPLICATION_NAME}
+  labels:
+    app: ${parameters.HUBER_APPLICATION_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${parameters.HUBER_APPLICATION_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${parameters.HUBER_APPLICATION_NAME}
+    spec:
+      containers:
+        - name: ${parameters.HUBER_APPLICATION_NAME}
+          image: ${parameters.HUBER_REGISTRY_HOST}/${parameters.HUBER_REPO_NAME}/${parameters.HUBER_APPLICATION_NAME}/${parameters.HUBER_APPLICATION_IMAGE_NAME}:${parameters.HUBER_APPLICATION_IMAGE_TAG}
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          imagePullPolicy: Always
+          env:
+            - name: env
+              value: ${parameters.APOLLO_ENV}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: basics-ability-docker-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ${parameters.KKE_PROJECT_NAME}
+  name: ${parameters.HUBER_APPLICATION_NAME}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: ${parameters.HUBER_APPLICATION_NAME}

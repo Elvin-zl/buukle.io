@@ -15,10 +15,6 @@ spec:
       labels:
         app: $APP_NAME
     spec:
-      volumes:
-        - name: volume-raufv3
-          persistentVolumeClaim:
-            claimName: pvc-generator-plus
       containers:
       - name: $APP_NAME
         image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG
@@ -29,9 +25,6 @@ spec:
         env:
           - name: env
             value: $ENV
-        volumeMounts:
-          - name: volume-raufv3
-            mountPath: /opt/temp
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
