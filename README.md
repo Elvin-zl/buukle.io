@@ -23,7 +23,7 @@
 
 主要根据项目(服务)骨架文件, 生成基础的项目代码
 
-1. 新建archetype
+1. 新建 archetype
 
 先在本地生成 archetype.jar 文件 教程参考 : https://www.jianshu.com/p/9ad32c78ef9f ,然后上传 .jar 文件到本模块:
 
