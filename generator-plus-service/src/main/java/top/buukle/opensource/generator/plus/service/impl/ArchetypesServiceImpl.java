@@ -17,6 +17,7 @@ import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.commons.call.PageResponse;
 import top.buukle.opensource.generator.plus.commons.status.StatusConstants;
 import top.buukle.opensource.generator.plus.service.util.DownloadUtil;
+import top.buukle.opensource.generator.plus.service.util.FileUtil;
 import top.buukle.opensource.generator.plus.utils.DateUtil;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.utils.SystemUtil;
@@ -305,16 +306,7 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         InputStream tempStream = DownloadUtil.getStreamDownloadOutFile(url);
         // 声明并初始化临时文件名
         String tempArchetypeFilePath = SystemUtil.getStoreDir() + StringUtil.BACKSLASH + genBatchUuid + StringUtil.BACKSLASH + genBatchUuid + ".jar";
-        // 声明并初始化临时文件
-        File tempArchetypeFile = new File(tempArchetypeFilePath);
-        // 写入临时文件
-        OutputStream os = new FileOutputStream(tempArchetypeFile);
-        int bytesRead ;
-        byte[] buffer = new byte[8192];
-        while ((bytesRead = tempStream.read(buffer, 0, 8192)) != -1) {
-            os.write(buffer, 0, bytesRead);
-        }
-        tempStream.close();
+        File tempArchetypeFile = FileUtil.writeStreamToFile(tempArchetypeFilePath, tempStream);
         // 执行日志落库
         CommonRequest<ArchetypesExecuteUpdateDTO> executeUpdateDTOCommonRequest = new CommonRequest<>();
         executeUpdateDTOCommonRequest.setHead(commonRequest.getHead());
@@ -358,6 +350,9 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
             // 更新日志状态 - 执行失败
             archetypesExecuteService.updateStatus(status.EXECUTING.value(), status.EXECUTE_FAILED.value(),archetypesExecuteVO.getId());
             throw new SystemException(SystemReturnEnum.FAILED,e.getMessage()+e.getCause());
+        } finally {
+            // 删除临时文件
+            tempArchetypeFile.deleteOnExit();
         }
         String zipFilePath = generatedArchetypeIdDir + genBatchUuid + StringUtil.DOT + ZIP_CONSTANT;
         ZipUtil.compress(generatedArchetypeIdBatchDir,new File(zipFilePath));

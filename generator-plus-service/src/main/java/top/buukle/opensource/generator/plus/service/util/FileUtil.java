@@ -36,4 +36,17 @@ public class FileUtil {
         outputStreamWriter.close();
         fileOutputStream.close();
     }
+    public static File writeStreamToFile(String filePath, InputStream tempStream) throws IOException {
+        File file = new File(filePath);
+        if (!file.getParentFile().exists())
+            file.getParentFile().mkdirs();
+        OutputStream os = new FileOutputStream(file);
+        int bytesRead ;
+        byte[] buffer = new byte[8192];
+        while ((bytesRead = tempStream.read(buffer, 0, 8192)) != -1) {
+            os.write(buffer, 0, bytesRead);
+        }
+        tempStream.close();
+        return file;
+    }
 }
