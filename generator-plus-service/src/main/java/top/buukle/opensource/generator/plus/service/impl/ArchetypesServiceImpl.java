@@ -16,6 +16,7 @@ import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.commons.call.PageResponse;
 import top.buukle.opensource.generator.plus.commons.status.StatusConstants;
+import top.buukle.opensource.generator.plus.service.UploadService;
 import top.buukle.opensource.generator.plus.service.util.DownloadUtil;
 import top.buukle.opensource.generator.plus.service.util.FileUtil;
 import top.buukle.opensource.generator.plus.utils.DateUtil;
@@ -61,6 +62,9 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
 
     @Autowired
     ArchetypesExecuteService archetypesExecuteService;
+
+    @Autowired
+    UploadService uploadService;
 
     /**
      * @description 增
@@ -355,14 +359,22 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
             tempArchetypeFile.deleteOnExit();
         }
         String zipFilePath = generatedArchetypeIdDir + genBatchUuid + StringUtil.DOT + ZIP_CONSTANT;
-        ZipUtil.compress(generatedArchetypeIdBatchDir,new File(zipFilePath));
+        File zipFile = new File(zipFilePath);
+        ZipUtil.compress(generatedArchetypeIdBatchDir,zipFile);
 
         String webZipFileUrl = zipFilePath.replaceFirst(SystemUtil.getStoreDir(), SystemConstants.SOFT_CONTEXT_PATH + "upload/temp");
+        // 上传产物
+        CommonResponse<String> stringCommonResponse = uploadService.uploadFile(zipFile);
+        if(!stringCommonResponse.isSuccess()){
+            throw new SystemException(SystemReturnEnum.GEN_ARCHETYPES_UPLOAD_ARCHETYPES_NULL,stringCommonResponse.getHead().getMsg());
+        }
+        String ossZipUrl = stringCommonResponse.getBody();
+
         // 更新url
         CommonRequest<ArchetypesExecuteUpdateDTO> executeUpdateDTOCommonRequestForUrl = new CommonRequest<>();
         executeUpdateDTOCommonRequestForUrl.setHead(commonRequest.getHead());
         ArchetypesExecuteUpdateDTO archetypesExecuteUpdateDTOForUrl = new ArchetypesExecuteUpdateDTO();
-        archetypesExecuteUpdateDTOForUrl.setUrl(webZipFileUrl);
+        archetypesExecuteUpdateDTOForUrl.setUrl(ossZipUrl);
         archetypesExecuteUpdateDTOForUrl.setId(archetypesExecuteVO.getId());
         executeUpdateDTOCommonRequestForUrl.setBody(archetypesExecuteUpdateDTOForUrl);
         archetypesExecuteService.updateById(executeUpdateDTOCommonRequestForUrl);

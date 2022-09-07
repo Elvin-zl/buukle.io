@@ -30,6 +30,7 @@ public enum SystemReturnEnum {
     /** archetype 执行*/
     GEN_ARCHETYPES_GEN_PARAM_NULL("F",SystemReturnEnum.class.getName() + "0100","生成失败,参数为空!"),
     GEN_ARCHETYPES_GEN_ARCHETYPES_NULL("F",SystemReturnEnum.class.getName() + "0101","生成失败,原型文件不存在!"),
+    GEN_ARCHETYPES_UPLOAD_ARCHETYPES_NULL("F",SystemReturnEnum.class.getName() + "0102","生成失败,上传oss失败!"),
 
     /** templates 执行*/
     TEMPLATES_INFO_GROUP_ID_NULL("F",SystemReturnEnum.class.getName() + "0200","查询失败,模板分组id为空!"),

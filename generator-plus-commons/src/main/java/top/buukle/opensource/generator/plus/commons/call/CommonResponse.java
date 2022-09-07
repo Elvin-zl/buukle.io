@@ -30,6 +30,10 @@ public class CommonResponse<T> {
         this.body = body;
     }
 
+    public boolean isSuccess() {
+        return this != null && this.getHead() != null  && "S".equals(this.getHead().getStatus());
+    }
+
     public static class Builder {
         public <T>  CommonResponse<T> buildSuccess(){
             return new CommonResponse<>(new ResponseHead.Builder().buildSuccess());

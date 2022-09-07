@@ -13,6 +13,10 @@ import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.service.UploadService;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.UUID;
 
 @Service("minioUploadServiceImpl")
@@ -46,6 +50,31 @@ public class MinioUploadServiceImpl implements UploadService {
             );
             String fileId = StringUtil.BACKSLASH + bucket + StringUtil.BACKSLASH + filename;
             log.info("用户UID:{}上传文件完成:{},fileId:{}",operator.getUserId(),originalFilename,fileId);
+            return new CommonResponse.Builder().buildSuccess(domain + "/" + fileId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new CommonResponse.Builder().buildFailedWithOriginMsg(e);
+        }
+    }
+
+    @Override
+    public CommonResponse<String> uploadFile(File file) {
+        try {
+            OperatorUserDTO operator = SessionUtils.getOperator();
+            String originalFilename = file.getName();
+            String random = UUID.randomUUID().toString().replace(StringUtil.MIDDLE, StringUtil.EMPTY);
+            String filename = random + StringUtil.BACKSLASH + originalFilename;
+            InputStream inputStream = new FileInputStream(file);
+            // 上传
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(filename)
+                            .stream(inputStream, file.length(), -1)
+                            .build()
+            );
+            String fileId = StringUtil.BACKSLASH + bucket + StringUtil.BACKSLASH + filename;
+            log.info("用户UID:{}上传文件完成:fileId:{}",operator.getUserId(),fileId);
             return new CommonResponse.Builder().buildSuccess(domain + "/" + fileId);
         } catch (Exception e) {
             e.printStackTrace();
