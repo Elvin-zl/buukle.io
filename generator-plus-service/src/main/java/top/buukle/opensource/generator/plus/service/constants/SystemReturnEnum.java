@@ -26,6 +26,7 @@ public enum SystemReturnEnum {
     GEN_CONFIGURES_ID_NULL("F",SystemReturnEnum.class.getName() + "0001","失败,配置id为空"),
     GEN_CONFIGURES_FAILED("F",SystemReturnEnum.class.getName() + "0002","执行失败!"),
     GEN_CONFIGURES_GEN_BAT_SCRIPT_FAILED("F",SystemReturnEnum.class.getName() + "003","生成脚本文件失败!"),
+    GEN_CONFIGURES_UPLOAD_FAILED("F",SystemReturnEnum.class.getName() + "004","生成失败,上传oss失败!"),
 
     /** archetype 执行*/
     GEN_ARCHETYPES_GEN_PARAM_NULL("F",SystemReturnEnum.class.getName() + "0100","生成失败,参数为空!"),

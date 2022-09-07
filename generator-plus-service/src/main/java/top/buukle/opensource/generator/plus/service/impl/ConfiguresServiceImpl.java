@@ -92,7 +92,7 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
     ConfiguresExecuteService<ConfiguresExecute, ConfiguresExecuteVO, ConfiguresExecuteQueryDTO, ConfiguresExecuteUpdateDTO> configuresExecuteService;
 
     @Autowired
-    private Environment env;
+    UploadService uploadService;
 
     /**
      * @description 增
@@ -465,16 +465,16 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
         ConfiguresExecuteVO configuresExecuteVO = configuresExecuteVOCommonResponse.getBody();
         // 更新执行记录状态为执行中
         configuresExecuteService.updateStatus(ConfiguresExecuteEnums.status.PUBLISHED.value(),ConfiguresExecuteEnums.status.EXECUTING.value(),configuresExecuteVO.getId());
-        String generatedFileStorePathZip;
+        String zipDownloadUrl;
         try {
-            generatedFileStorePathZip = this.doGen(configures, configuresTemplatesRelations);
+            zipDownloadUrl = this.doGen(configures, configuresTemplatesRelations);
         } catch (Exception e) {
             e.printStackTrace();
             // 更新执行记录状态为执行失败
             configuresExecuteService.updateStatus(ConfiguresExecuteEnums.status.EXECUTING.value(),ConfiguresExecuteEnums.status.EXECUTE_FAILED.value(),configuresExecuteVO.getId());
             throw new SystemException(SystemReturnEnum.GEN_CONFIGURES_FAILED);
         }
-        if(StringUtil.isEmpty(generatedFileStorePathZip)){
+        if(StringUtil.isEmpty(zipDownloadUrl)){
             // 更新执行记录状态为执行失败
             configuresExecuteService.updateStatus(ConfiguresExecuteEnums.status.EXECUTING.value(),ConfiguresExecuteEnums.status.EXECUTE_FAILED.value(),configuresExecuteVO.getId());
             throw new SystemException(SystemReturnEnum.GEN_CONFIGURES_FAILED);
@@ -483,8 +483,8 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
         // 将本地临时的zip文件映射到静态资源路径,并更新日志记录的下载地址
         ConfiguresExecute configuresExecuteQueryForUpdate = new ConfiguresExecute();
         configuresExecuteQueryForUpdate.setId(configuresExecuteVO.getId());
-        String downUrl = generatedFileStorePathZip.replaceFirst(SystemUtil.getStoreDir(), SystemConstants.SOFT_CONTEXT_PATH + "upload/temp");
-        configuresExecuteQueryForUpdate.setZipDownUrl(downUrl);
+
+        configuresExecuteQueryForUpdate.setZipDownUrl(zipDownloadUrl);
         configuresExecuteService.updateById(configuresExecuteQueryForUpdate);
         // 更新执行记录状态为执行成功
         configuresExecuteService.updateStatus(ConfiguresExecuteEnums.status.EXECUTING.value(),ConfiguresExecuteEnums.status.EXECUTE_SUCCESS.value(),configuresExecuteVO.getId());
@@ -658,8 +658,16 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
             }
             ZipUtil.compress(generatedFileStoreRootPath,zipFile);
             LOGGER.info(generatedFileStorePathZip);
+            String localDownUrl = generatedFileStorePathZip.replaceFirst(SystemUtil.getStoreDir(), SystemConstants.SOFT_CONTEXT_PATH + "upload/temp");
+
+            // 上传oss
+            CommonResponse<String> stringCommonResponse = uploadService.uploadFile(zipFile);
+            if(!stringCommonResponse.isSuccess()){
+                throw new SystemException(SystemReturnEnum.GEN_CONFIGURES_UPLOAD_FAILED,stringCommonResponse.getHead().getMsg());
+            }
+            return stringCommonResponse.getBody();
         }
-        return generatedFileStorePathZip;
+        return null;
     }
 
     /**
