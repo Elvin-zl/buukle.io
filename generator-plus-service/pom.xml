@@ -34,6 +34,11 @@
             <artifactId>buukle-cloud-starter-apollo</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.4.1</version>
+        </dependency>
         <!--service-->
         <dependency>
             <groupId>com.baomidou</groupId>
