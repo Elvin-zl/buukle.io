@@ -16,6 +16,7 @@ import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.commons.call.PageResponse;
 import top.buukle.opensource.generator.plus.commons.status.StatusConstants;
+import top.buukle.opensource.generator.plus.service.util.DownloadUtil;
 import top.buukle.opensource.generator.plus.utils.DateUtil;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.utils.SystemUtil;
@@ -40,7 +41,7 @@ import top.buukle.opensource.generator.plus.service.engine.archetypes.MyVelocity
 import top.buukle.opensource.generator.plus.service.exception.SystemException;
 import top.buukle.opensource.generator.plus.service.util.ZipUtil;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -298,9 +299,22 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
             throw new SystemException(SystemReturnEnum.GEN_ARCHETYPES_GEN_ARCHETYPES_NULL);
         }
         archetypesExecuteUpdateDTO.setName(archetypes.getName());
-        // 将web路径转为本地路径,以后接了OSS服务,这里需要本地缓存处理一下
+        // 将web路径转为本地缓存路径
         String url = archetypes.getUrl();
-        String archetypeFilePath = url.replaceFirst(SystemConstants.SOFT_CONTEXT_PATH + "upload/temp", SystemUtil.getStoreDir());
+        // 下载文件流
+        InputStream tempStream = DownloadUtil.getStreamDownloadOutFile(url);
+        // 声明并初始化临时文件名
+        String tempArchetypeFilePath = SystemUtil.getStoreDir() + StringUtil.BACKSLASH + genBatchUuid + StringUtil.BACKSLASH + genBatchUuid + ".jar";
+        // 声明并初始化临时文件
+        File tempArchetypeFile = new File(tempArchetypeFilePath);
+        // 写入临时文件
+        OutputStream os = new FileOutputStream(tempArchetypeFile);
+        int bytesRead ;
+        byte[] buffer = new byte[8192];
+        while ((bytesRead = tempStream.read(buffer, 0, 8192)) != -1) {
+            os.write(buffer, 0, bytesRead);
+        }
+        tempStream.close();
         // 执行日志落库
         CommonRequest<ArchetypesExecuteUpdateDTO> executeUpdateDTOCommonRequest = new CommonRequest<>();
         executeUpdateDTOCommonRequest.setHead(commonRequest.getHead());
@@ -329,7 +343,7 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         Properties properties = new Properties();
         properties.setProperty("resource.loader", "jar");
         properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
-        properties.setProperty("jar.resource.loader.path", "jar:file:" + archetypeFilePath);
+        properties.setProperty("jar.resource.loader.path", "jar:file:" + tempArchetypeFilePath);
 
         VelocityEngine velocityEngine = new VelocityEngine(properties);
 
@@ -338,7 +352,7 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
 
         archetypeGenerationRequest.setMyVelocityComponent(myVelocityComponent);
         try {
-            myFilesetArchetypeGenerator.generateArchetype(archetypeGenerationRequest,new File(archetypeFilePath));
+            myFilesetArchetypeGenerator.generateArchetype(archetypeGenerationRequest,new File(tempArchetypeFilePath));
         } catch (Exception e) {
             e.printStackTrace();
             // 更新日志状态 - 执行失败
