@@ -42,8 +42,7 @@ public enum SystemReturnEnum {
     CONFIGURES_INFO_TEMPLATES_GROUP_NULL("F",SystemReturnEnum.class.getName() + "0200","查询失败,模板分组信息为空!"),
 
     /** datasources */
-    DATASOURCES_TEST_LINK_NOT_SAME("F",SystemReturnEnum.class.getName() + "0300","测试失败,该条配置产生变化,请刷新重试"),
-    DATASOURCES_TEST_LINK_ID_NOT_EXIST("F",SystemReturnEnum.class.getName() + "0301","测试失败,该条记录状态不正确!"),
+    DATASOURCES_TEST_LINK_ID_NOT_EXIST("F",SystemReturnEnum.class.getName() + "0300","测试失败,该条记录状态不正确!"),
     ;
     private String status;
     private String code;

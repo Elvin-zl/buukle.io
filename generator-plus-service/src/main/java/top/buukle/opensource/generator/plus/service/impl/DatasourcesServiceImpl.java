@@ -282,8 +282,8 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
         DatasourcesUpdateDTO body = commonRequest.getBody();
         if(body.getId() != null){
             Datasources datasources = super.getById(body.getId());
-            if(datasources == null || !body.getUsername().equals(datasources.getUsername()) || !body.getUrl().equals(datasources.getUrl())){
-                throw new SystemException(SystemReturnEnum.DATASOURCES_TEST_LINK_NOT_SAME);
+            if(datasources == null){
+                throw new SystemException(SystemReturnEnum.DATASOURCES_TEST_LINK_ID_NOT_EXIST);
             }
             Connection connection = DataBaseUtil.getConnection(DatabaseType.MySQL, datasources.getUsername(), datasources.getPassword(), datasources.getUrl());
             connection.close();
