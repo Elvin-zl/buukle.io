@@ -20,6 +20,7 @@ public enum SystemReturnEnum {
     FAILED_401_OPERATOR_SUB_TENANT_IDS_NULL("F",SystemReturnEnum.class.getName() + "0000","请求参数错误,OPERATOR_SUB_TENANT_IDS 为空!"),
     FAILED_401_OPERATOR_TENANT_ID_NULL("F",SystemReturnEnum.class.getName() + "0000","请求参数错误,OPERATOR_TENANT_ID 为空!"),
     FAILED_401_SIGNATURE_NULL("F",SystemReturnEnum.class.getName() + "0000","请求参数错误,SIGNATURE 为空!"),
+    FAILED_401_ID_NULL("F",SystemReturnEnum.class.getName() + "0000","请求参数错误,ID 为空!"),
 
 
     /** 模板 执行*/
@@ -39,6 +40,10 @@ public enum SystemReturnEnum {
 
     /** configures 编辑*/
     CONFIGURES_INFO_TEMPLATES_GROUP_NULL("F",SystemReturnEnum.class.getName() + "0200","查询失败,模板分组信息为空!"),
+
+    /** datasources */
+    DATASOURCES_TEST_LINK_NOT_SAME("F",SystemReturnEnum.class.getName() + "0300","测试失败,该条配置产生变化,请刷新重试"),
+    DATASOURCES_TEST_LINK_ID_NOT_EXIST("F",SystemReturnEnum.class.getName() + "0301","测试失败,该条记录状态不正确!"),
     ;
     private String status;
     private String code;

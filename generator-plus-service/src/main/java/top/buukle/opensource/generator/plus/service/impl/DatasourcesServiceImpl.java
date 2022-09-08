@@ -43,6 +43,8 @@ import java.util.List;
 public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datasources> implements DatasourcesService<Datasources, DatasourcesVO, DatasourcesQueryDTO, DatasourcesUpdateDTO> {
 
 
+    private static final String MASK = "******";
+
     /**
      * @description 增
      * @param commonRequest
@@ -131,6 +133,10 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
         // 转换DTO
         Datasources datasources = new Datasources();
         BeanUtils.copyProperties(datasourcesUpdateDTO,datasources);
+        // 掩码不更新
+        if(MASK.equals(datasourcesUpdateDTO.getPassword())){
+            datasources.setPassword(null);
+        }
         // 更新字段
         this.updatePre(datasources);
         // 落库
@@ -161,6 +167,7 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
         // 转换响应
         DatasourcesVO datasourcesVO = new DatasourcesVO();
         BeanUtils.copyProperties(one, datasourcesVO);
+        datasourcesVO.setPassword(MASK);
         CommonResponse<DatasourcesVO> datasourcesQueryVOCommonResponse = new CommonResponse.Builder().buildSuccess(datasourcesVO);
         return datasourcesQueryVOCommonResponse;
     }
@@ -190,6 +197,7 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
         for (Datasources datasourcesDB : list) {
             DatasourcesVO datasourcesVO = new DatasourcesVO();
             BeanUtils.copyProperties(datasourcesDB, datasourcesVO);
+            datasourcesVO.setPassword(MASK);
             queryVOList.add(datasourcesVO);
         }
         return new PageResponse.Builder().build(queryVOList, pageInfo.getPageNum(), pageInfo.getPageSize(), pageInfo.getTotal());
@@ -272,9 +280,17 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
     @Override
     public CommonResponse<Boolean> testLink(CommonRequest<DatasourcesUpdateDTO> commonRequest) throws SQLException {
         DatasourcesUpdateDTO body = commonRequest.getBody();
-        Connection connection = DataBaseUtil.getConnection(DatabaseType.MySQL, body.getUsername(), body.getPassword(), body.getUrl());
-        connection.close();
-        return new CommonResponse.Builder().buildSuccess();
+        if(body.getId() != null){
+            Datasources datasources = super.getById(body.getId());
+            if(datasources == null || !body.getUsername().equals(datasources.getUsername()) || !body.getUrl().equals(datasources.getUrl())){
+                throw new SystemException(SystemReturnEnum.DATASOURCES_TEST_LINK_NOT_SAME);
+            }
+            Connection connection = DataBaseUtil.getConnection(DatabaseType.MySQL, datasources.getUsername(), datasources.getPassword(), datasources.getUrl());
+            connection.close();
+            return new CommonResponse.Builder().buildSuccess();
+        }else{
+            throw new SystemException(SystemReturnEnum.FAILED_401_ID_NULL);
+        }
     }
 
     /**
