@@ -1,7 +1,9 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +36,7 @@ import top.buukle.opensource.generator.plus.utils.JsonUtil;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -196,11 +199,11 @@ public class TemplatesGroupServiceImpl extends ServiceImpl<TemplatesGroupMapper,
         TemplatesGroup templatesGroup = new TemplatesGroup();
         BeanUtils.copyProperties(templatesGroupQueryDTO,templatesGroup);
         // 条件
-        QueryWrapper<TemplatesGroup> queryWrapper = this.assPageParam(templatesGroupQueryDTO);
+        LambdaQueryWrapper<TemplatesGroup> templatesGroupLambdaQueryWrapper = this.assPageParam(templatesGroupQueryDTO);
         // 查询
         PageHelper.startPage(templatesGroupQueryDTO.getPageNo(),templatesGroupQueryDTO.getPageSize());
-        TenantHelper.startTenant("templates_group");
-        List<TemplatesGroup> list = super.list(queryWrapper);
+        TenantHelper.startTenant(SqlHelper.table(TemplatesGroup.class).getTableName());
+        List<TemplatesGroup> list = super.list(templatesGroupLambdaQueryWrapper);
         PageInfo<TemplatesGroup> pageInfo = new PageInfo<>(list);
         // 分页
         List<TemplatesGroupVO> queryVOList = new ArrayList<>();
@@ -219,17 +222,83 @@ public class TemplatesGroupServiceImpl extends ServiceImpl<TemplatesGroupMapper,
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<TemplatesGroup> assPageParam( TemplatesGroupQueryDTO templatesGroupQueryDTO) {
-        QueryWrapper<TemplatesGroup> queryWrapper = new QueryWrapper<>();
+    private LambdaQueryWrapper<TemplatesGroup> assPageParam(TemplatesGroupQueryDTO templatesGroupQueryDTO) {
+        LambdaQueryWrapper<TemplatesGroup> queryWrapper = new LambdaQueryWrapper<>();
+
         if(StringUtil.isNotEmpty(templatesGroupQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(templatesGroupQueryDTO.getStartTime()));
+            queryWrapper.ge(TemplatesGroup::getGmtCreated, DateUtil.parse(templatesGroupQueryDTO.getStartTime()));
         }
         if(StringUtil.isNotEmpty(templatesGroupQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(templatesGroupQueryDTO.getStartTime()));
+            queryWrapper.le(TemplatesGroup::getGmtCreated, DateUtil.parse(templatesGroupQueryDTO.getStartTime()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+        if(templatesGroupQueryDTO.getStates() != null){
+            queryWrapper.in(TemplatesGroup::getStatus, Arrays.asList(templatesGroupQueryDTO.getStates()));
+        }
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != templatesGroupQueryDTO.getId()){
+            queryWrapper.eq(TemplatesGroup::getId,templatesGroupQueryDTO.getId());
+        }
+        if(null != templatesGroupQueryDTO.getAuditId()){
+            queryWrapper.eq(TemplatesGroup::getAuditId,templatesGroupQueryDTO.getAuditId());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getApplicationCode())){
+            queryWrapper.eq(TemplatesGroup::getApplicationCode,templatesGroupQueryDTO.getApplicationCode());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getName())){
+            queryWrapper.eq(TemplatesGroup::getName,templatesGroupQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getDescription())){
+            queryWrapper.eq(TemplatesGroup::getDescription,templatesGroupQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getRemark())){
+            queryWrapper.eq(TemplatesGroup::getRemark,templatesGroupQueryDTO.getRemark());
+        }
+        if(null != templatesGroupQueryDTO.getGmtCreated()){
+            queryWrapper.eq(TemplatesGroup::getGmtCreated,templatesGroupQueryDTO.getGmtCreated());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getCreator())){
+            queryWrapper.eq(TemplatesGroup::getCreator,templatesGroupQueryDTO.getCreator());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getCreatorCode())){
+            queryWrapper.eq(TemplatesGroup::getCreatorCode,templatesGroupQueryDTO.getCreatorCode());
+        }
+        if(null != templatesGroupQueryDTO.getGmtModified()){
+            queryWrapper.eq(TemplatesGroup::getGmtModified,templatesGroupQueryDTO.getGmtModified());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getModifier())){
+            queryWrapper.eq(TemplatesGroup::getModifier,templatesGroupQueryDTO.getModifier());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getModifierCode())){
+            queryWrapper.eq(TemplatesGroup::getModifierCode,templatesGroupQueryDTO.getModifierCode());
+        }
+        if(null != templatesGroupQueryDTO.getAuditStatus()){
+            queryWrapper.eq(TemplatesGroup::getAuditStatus,templatesGroupQueryDTO.getAuditStatus());
+        }
+        if(null != templatesGroupQueryDTO.getStatus()){
+            queryWrapper.eq(TemplatesGroup::getStatus,templatesGroupQueryDTO.getStatus());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getBak01())){
+            queryWrapper.eq(TemplatesGroup::getBak01,templatesGroupQueryDTO.getBak01());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getBak02())){
+            queryWrapper.eq(TemplatesGroup::getBak02,templatesGroupQueryDTO.getBak02());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getBak03())){
+            queryWrapper.eq(TemplatesGroup::getBak03,templatesGroupQueryDTO.getBak03());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getBak04())){
+            queryWrapper.eq(TemplatesGroup::getBak04,templatesGroupQueryDTO.getBak04());
+        }
+        if(!StringUtil.isEmpty(templatesGroupQueryDTO.getBak05())){
+            queryWrapper.eq(TemplatesGroup::getBak05,templatesGroupQueryDTO.getBak05());
+        }
+
+
+        queryWrapper.gt(TemplatesGroup::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(TemplatesGroup::getGmtModified);
+
         return queryWrapper;
     }
 

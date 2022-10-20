@@ -33,6 +33,11 @@ public class ConfiguresQueryDTO {
      */
     @ApiModelProperty(value = "截止时间")
     private String endTime;
+    /**
+     * 状态集
+     */
+    @ApiModelProperty(value = "状态集")
+    private String[] states;
 
     /**
      * 主键id

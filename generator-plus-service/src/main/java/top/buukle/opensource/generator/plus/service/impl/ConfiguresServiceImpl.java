@@ -1,7 +1,9 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
@@ -335,15 +337,15 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
     @Override
     public PageResponse<ConfiguresVO> getPage(CommonRequest<ConfiguresQueryDTO> commonRequest) {
         // 转换DTO
-        ConfiguresQueryDTO ConfiguresQueryDTO = commonRequest.getBody();
+        ConfiguresQueryDTO configuresQueryDTO = commonRequest.getBody();
         Configures Configures = new Configures();
-        BeanUtils.copyProperties(ConfiguresQueryDTO,Configures);
+        BeanUtils.copyProperties(configuresQueryDTO,Configures);
         // 条件
-        QueryWrapper<Configures> queryWrapper = this.assPageParam(ConfiguresQueryDTO);
+        LambdaQueryWrapper<top.buukle.opensource.generator.plus.entity.Configures> configuresLambdaQueryWrapper = this.assPageParam(configuresQueryDTO);
         // 查询
-        PageHelper.startPage(ConfiguresQueryDTO.getPageNo(),ConfiguresQueryDTO.getPageSize());
-        TenantHelper.startTenant("configures");
-        List<Configures> list = super.list(queryWrapper);
+        PageHelper.startPage(configuresQueryDTO.getPageNo(),configuresQueryDTO.getPageSize());
+        TenantHelper.startTenant(SqlHelper.table(Configures.class).getTableName());
+        List<Configures> list = super.list(configuresLambdaQueryWrapper);
         PageInfo<Configures> pageInfo = new PageInfo<>(list);
         // 分页
         List<ConfiguresVO> queryVOList = new ArrayList<>();
@@ -357,22 +359,68 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
 
     /**
      * @description 组装分页条件
-     * @param ConfiguresQueryDTO
      * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<top.buukle.generator.entity.model.Configures>
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<Configures> assPageParam( ConfiguresQueryDTO ConfiguresQueryDTO) {
-        QueryWrapper<Configures> queryWrapper = new QueryWrapper<>();
-        if(StringUtil.isNotEmpty(ConfiguresQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(ConfiguresQueryDTO.getStartTime()));
+    private LambdaQueryWrapper<Configures> assPageParam(ConfiguresQueryDTO configuresQueryDTO) {
+        LambdaQueryWrapper<Configures> queryWrapper = new LambdaQueryWrapper<>();
+
+        if(StringUtil.isNotEmpty(configuresQueryDTO.getStartTime())){
+            queryWrapper.ge(Configures::getGmtCreated, DateUtil.parse(configuresQueryDTO.getStartTime()));
         }
-        if(StringUtil.isNotEmpty(ConfiguresQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(ConfiguresQueryDTO.getStartTime()));
+        if(StringUtil.isNotEmpty(configuresQueryDTO.getEndTime())){
+            queryWrapper.le(Configures::getGmtCreated, DateUtil.parse(configuresQueryDTO.getStartTime()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+        if(configuresQueryDTO.getStates() != null){
+            queryWrapper.in(Configures::getStatus, Arrays.asList(configuresQueryDTO.getStates()));
+        }
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != configuresQueryDTO.getId()){
+            queryWrapper.eq(Configures::getId,configuresQueryDTO.getId());
+        }
+        if(null != configuresQueryDTO.getAuditId()){
+            queryWrapper.eq(Configures::getAuditId,configuresQueryDTO.getAuditId());
+        }
+        if(null != configuresQueryDTO.getDatasourcesId()){
+            queryWrapper.eq(Configures::getDatasourcesId,configuresQueryDTO.getDatasourcesId());
+        }
+        if(null != configuresQueryDTO.getTemplatesGroupId()){
+            queryWrapper.eq(Configures::getTemplatesGroupId,configuresQueryDTO.getTemplatesGroupId());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getApplicationCode())){
+            queryWrapper.eq(Configures::getApplicationCode,configuresQueryDTO.getApplicationCode());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getDirLocation())){
+            queryWrapper.eq(Configures::getDirLocation,configuresQueryDTO.getDirLocation());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getBasePackage())){
+            queryWrapper.eq(Configures::getBasePackage,configuresQueryDTO.getBasePackage());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getName())){
+            queryWrapper.eq(Configures::getName,configuresQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getUrl())){
+            queryWrapper.eq(Configures::getUrl,configuresQueryDTO.getUrl());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getTables())){
+            queryWrapper.eq(Configures::getTables,configuresQueryDTO.getTables());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getContent())){
+            queryWrapper.eq(Configures::getContent,configuresQueryDTO.getContent());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getDescription())){
+            queryWrapper.eq(Configures::getDescription,configuresQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(configuresQueryDTO.getRemark())){
+            queryWrapper.eq(Configures::getRemark,configuresQueryDTO.getRemark());
+        }
+
+        queryWrapper.gt(Configures::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(Configures::getGmtModified);
+
         return queryWrapper;
     }
 

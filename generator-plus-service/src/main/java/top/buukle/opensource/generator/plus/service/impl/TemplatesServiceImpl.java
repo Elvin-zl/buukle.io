@@ -1,8 +1,10 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +36,7 @@ import top.buukle.opensource.generator.plus.service.constants.SystemReturnEnum;
 import top.buukle.opensource.generator.plus.service.exception.SystemException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -192,11 +195,11 @@ public class TemplatesServiceImpl extends ServiceImpl<TemplatesMapper, Templates
         Templates Templates = new Templates();
         BeanUtils.copyProperties(TemplatesQueryDTO,Templates);
         // 条件
-        QueryWrapper<Templates> queryWrapper = this.assPageParam(TemplatesQueryDTO);
+        LambdaQueryWrapper<top.buukle.opensource.generator.plus.entity.Templates> templatesLambdaQueryWrapper = this.assPageParam(TemplatesQueryDTO);
         // 查询
         PageHelper.startPage(TemplatesQueryDTO.getPageNo(),TemplatesQueryDTO.getPageSize());
-        TenantHelper.startTenant("templates");
-        List<Templates> list = super.list(queryWrapper);
+        TenantHelper.startTenant(SqlHelper.table(Templates.class).getTableName());
+        List<Templates> list = super.list(templatesLambdaQueryWrapper);
         PageInfo<Templates> pageInfo = new PageInfo<>(list);
         // 分页
         List<TemplatesVO> queryVOList = new ArrayList<>();
@@ -220,23 +223,71 @@ public class TemplatesServiceImpl extends ServiceImpl<TemplatesMapper, Templates
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<Templates> assPageParam( TemplatesQueryDTO templatesQueryDTO) {
-        QueryWrapper<Templates> queryWrapper = new QueryWrapper<>();
-        if(StringUtil.isNotEmpty(templatesQueryDTO.getName())){
-            queryWrapper.eq("name", templatesQueryDTO.getName());
-        }
+    private LambdaQueryWrapper<Templates> assPageParam(TemplatesQueryDTO templatesQueryDTO) {
+        LambdaQueryWrapper<Templates> queryWrapper = new LambdaQueryWrapper<>();
+
         if(StringUtil.isNotEmpty(templatesQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(templatesQueryDTO.getStartTime()));
+            queryWrapper.ge(Templates::getGmtCreated, DateUtil.parse(templatesQueryDTO.getStartTime()));
         }
         if(StringUtil.isNotEmpty(templatesQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(templatesQueryDTO.getStartTime()));
+            queryWrapper.le(Templates::getGmtCreated, DateUtil.parse(templatesQueryDTO.getStartTime()));
         }
-        if(templatesQueryDTO.getTemplatesGroupId() != null){
-            queryWrapper.eq("templates_group_id",templatesQueryDTO.getTemplatesGroupId());
+        if(templatesQueryDTO.getStates() != null){
+            queryWrapper.in(Templates::getStatus, Arrays.asList(templatesQueryDTO.getStates()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != templatesQueryDTO.getId()){
+            queryWrapper.eq(Templates::getId,templatesQueryDTO.getId());
+        }
+        if(null != templatesQueryDTO.getAuditId()){
+            queryWrapper.eq(Templates::getAuditId,templatesQueryDTO.getAuditId());
+        }
+        if(null != templatesQueryDTO.getTemplatesGroupId()){
+            queryWrapper.eq(Templates::getTemplatesGroupId,templatesQueryDTO.getTemplatesGroupId());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getApplicationCode())){
+            queryWrapper.eq(Templates::getApplicationCode,templatesQueryDTO.getApplicationCode());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getName())){
+            queryWrapper.eq(Templates::getName,templatesQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getAddNameSuffix())){
+            queryWrapper.eq(Templates::getAddNameSuffix,templatesQueryDTO.getAddNameSuffix());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getPath())){
+            queryWrapper.eq(Templates::getPath,templatesQueryDTO.getPath());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getOpenTablePath())){
+            queryWrapper.eq(Templates::getOpenTablePath,templatesQueryDTO.getOpenTablePath());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getUrl())){
+            queryWrapper.eq(Templates::getUrl,templatesQueryDTO.getUrl());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getType())){
+            queryWrapper.eq(Templates::getType,templatesQueryDTO.getType());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getContent())){
+            queryWrapper.eq(Templates::getContent,templatesQueryDTO.getContent());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getDescription())){
+            queryWrapper.eq(Templates::getDescription,templatesQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(templatesQueryDTO.getRemark())){
+            queryWrapper.eq(Templates::getRemark,templatesQueryDTO.getRemark());
+        }
+        if(null != templatesQueryDTO.getAuditStatus()){
+            queryWrapper.eq(Templates::getAuditStatus,templatesQueryDTO.getAuditStatus());
+        }
+        if(null != templatesQueryDTO.getStatus()){
+            queryWrapper.eq(Templates::getStatus,templatesQueryDTO.getStatus());
+        }
+
+
+        queryWrapper.gt(Templates::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(Templates::getGmtModified);
+
         return queryWrapper;
     }
 

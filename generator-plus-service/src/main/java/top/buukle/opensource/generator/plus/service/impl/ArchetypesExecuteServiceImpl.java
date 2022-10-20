@@ -1,8 +1,10 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +29,7 @@ import top.buukle.opensource.generator.plus.service.exception.SystemException;
 import top.buukle.opensource.generator.plus.utils.DateUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -174,11 +177,11 @@ public class ArchetypesExecuteServiceImpl extends ServiceImpl<ArchetypesExecuteM
         ArchetypesExecute archetypesExecute = new ArchetypesExecute();
         BeanUtils.copyProperties(archetypesExecuteQueryDTO,archetypesExecute);
         // 条件
-        QueryWrapper<ArchetypesExecute> queryWrapper = this.assPageParam(archetypesExecuteQueryDTO);
+        LambdaQueryWrapper<ArchetypesExecute> archetypesExecuteLambdaQueryWrapper = this.assPageParam(archetypesExecuteQueryDTO);
         // 查询
         PageHelper.startPage(archetypesExecuteQueryDTO.getPageNo(),archetypesExecuteQueryDTO.getPageSize());
-        TenantHelper.startTenant("archetypes_execute");
-        List<ArchetypesExecute> list = super.list(queryWrapper);
+        TenantHelper.startTenant(SqlHelper.table(ArchetypesExecute.class).getTableName());
+        List<ArchetypesExecute> list = super.list(archetypesExecuteLambdaQueryWrapper);
         PageInfo<ArchetypesExecute> pageInfo = new PageInfo<>(list);
         // 分页
         List<ArchetypesExecuteVO> queryVOList = new ArrayList<>();
@@ -197,17 +200,101 @@ public class ArchetypesExecuteServiceImpl extends ServiceImpl<ArchetypesExecuteM
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<ArchetypesExecute> assPageParam( ArchetypesExecuteQueryDTO archetypesExecuteQueryDTO) {
-        QueryWrapper<ArchetypesExecute> queryWrapper = new QueryWrapper<>();
+    private LambdaQueryWrapper<ArchetypesExecute> assPageParam(ArchetypesExecuteQueryDTO archetypesExecuteQueryDTO) {
+        LambdaQueryWrapper<ArchetypesExecute> queryWrapper = new LambdaQueryWrapper<>();
+
         if(StringUtil.isNotEmpty(archetypesExecuteQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(archetypesExecuteQueryDTO.getStartTime()));
+            queryWrapper.ge(ArchetypesExecute::getGmtCreated, DateUtil.parse(archetypesExecuteQueryDTO.getStartTime()));
         }
         if(StringUtil.isNotEmpty(archetypesExecuteQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(archetypesExecuteQueryDTO.getStartTime()));
+            queryWrapper.le(ArchetypesExecute::getGmtCreated, DateUtil.parse(archetypesExecuteQueryDTO.getStartTime()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+        if(archetypesExecuteQueryDTO.getStates() != null){
+            queryWrapper.in(ArchetypesExecute::getStatus, Arrays.asList(archetypesExecuteQueryDTO.getStates()));
+        }
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != archetypesExecuteQueryDTO.getId()){
+            queryWrapper.eq(ArchetypesExecute::getId,archetypesExecuteQueryDTO.getId());
+        }
+        if(null != archetypesExecuteQueryDTO.getArchetypesId()){
+            queryWrapper.eq(ArchetypesExecute::getArchetypesId,archetypesExecuteQueryDTO.getArchetypesId());
+        }
+        if(null != archetypesExecuteQueryDTO.getAuditId()){
+            queryWrapper.eq(ArchetypesExecute::getAuditId,archetypesExecuteQueryDTO.getAuditId());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getApplicationCode())){
+            queryWrapper.eq(ArchetypesExecute::getApplicationCode,archetypesExecuteQueryDTO.getApplicationCode());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getName())){
+            queryWrapper.eq(ArchetypesExecute::getName,archetypesExecuteQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getUrl())){
+            queryWrapper.eq(ArchetypesExecute::getUrl,archetypesExecuteQueryDTO.getUrl());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBasePackage())){
+            queryWrapper.eq(ArchetypesExecute::getBasePackage,archetypesExecuteQueryDTO.getBasePackage());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getGroupId())){
+            queryWrapper.eq(ArchetypesExecute::getGroupId,archetypesExecuteQueryDTO.getGroupId());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getArtifactId())){
+            queryWrapper.eq(ArchetypesExecute::getArtifactId,archetypesExecuteQueryDTO.getArtifactId());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getVersion())){
+            queryWrapper.eq(ArchetypesExecute::getVersion,archetypesExecuteQueryDTO.getVersion());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getDescription())){
+            queryWrapper.eq(ArchetypesExecute::getDescription,archetypesExecuteQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getRemark())){
+            queryWrapper.eq(ArchetypesExecute::getRemark,archetypesExecuteQueryDTO.getRemark());
+        }
+        if(null != archetypesExecuteQueryDTO.getGmtCreated()){
+            queryWrapper.eq(ArchetypesExecute::getGmtCreated,archetypesExecuteQueryDTO.getGmtCreated());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getCreator())){
+            queryWrapper.eq(ArchetypesExecute::getCreator,archetypesExecuteQueryDTO.getCreator());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getCreatorCode())){
+            queryWrapper.eq(ArchetypesExecute::getCreatorCode,archetypesExecuteQueryDTO.getCreatorCode());
+        }
+        if(null != archetypesExecuteQueryDTO.getGmtModified()){
+            queryWrapper.eq(ArchetypesExecute::getGmtModified,archetypesExecuteQueryDTO.getGmtModified());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getModifier())){
+            queryWrapper.eq(ArchetypesExecute::getModifier,archetypesExecuteQueryDTO.getModifier());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getModifierCode())){
+            queryWrapper.eq(ArchetypesExecute::getModifierCode,archetypesExecuteQueryDTO.getModifierCode());
+        }
+        if(null != archetypesExecuteQueryDTO.getAuditStatus()){
+            queryWrapper.eq(ArchetypesExecute::getAuditStatus,archetypesExecuteQueryDTO.getAuditStatus());
+        }
+        if(null != archetypesExecuteQueryDTO.getStatus()){
+            queryWrapper.eq(ArchetypesExecute::getStatus,archetypesExecuteQueryDTO.getStatus());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBak01())){
+            queryWrapper.eq(ArchetypesExecute::getBak01,archetypesExecuteQueryDTO.getBak01());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBak02())){
+            queryWrapper.eq(ArchetypesExecute::getBak02,archetypesExecuteQueryDTO.getBak02());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBak03())){
+            queryWrapper.eq(ArchetypesExecute::getBak03,archetypesExecuteQueryDTO.getBak03());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBak04())){
+            queryWrapper.eq(ArchetypesExecute::getBak04,archetypesExecuteQueryDTO.getBak04());
+        }
+        if(!StringUtil.isEmpty(archetypesExecuteQueryDTO.getBak05())){
+            queryWrapper.eq(ArchetypesExecute::getBak05,archetypesExecuteQueryDTO.getBak05());
+        }
+
+
+        queryWrapper.gt(ArchetypesExecute::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(ArchetypesExecute::getGmtModified);
+
         return queryWrapper;
     }
 

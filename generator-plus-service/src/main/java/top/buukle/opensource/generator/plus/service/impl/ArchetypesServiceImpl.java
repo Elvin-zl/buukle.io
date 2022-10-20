@@ -1,7 +1,9 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.apache.velocity.app.VelocityEngine;
@@ -202,11 +204,11 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         Archetypes archetypes = new Archetypes();
         BeanUtils.copyProperties(archetypesQueryDTO,archetypes);
         // 条件
-        QueryWrapper<Archetypes> queryWrapper = this.assPageParam(archetypesQueryDTO);
+        LambdaQueryWrapper<Archetypes> archetypesLambdaQueryWrapper = this.assPageParam(archetypesQueryDTO);
         // 查询
         PageHelper.startPage(archetypesQueryDTO.getPageNo(),archetypesQueryDTO.getPageSize());
-        TenantHelper.startTenant("archetypes");
-        List<Archetypes> list = super.list(queryWrapper);
+        TenantHelper.startTenant(SqlHelper.table(Archetypes.class).getTableName());
+        List<Archetypes> list = super.list(archetypesLambdaQueryWrapper);
         PageInfo<Archetypes> pageInfo = new PageInfo<>(list);
         // 分页
         List<ArchetypesVO> queryVOList = new ArrayList<>();
@@ -225,17 +227,86 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<Archetypes> assPageParam( ArchetypesQueryDTO archetypesQueryDTO) {
-        QueryWrapper<Archetypes> queryWrapper = new QueryWrapper<>();
+    private LambdaQueryWrapper<Archetypes> assPageParam(ArchetypesQueryDTO archetypesQueryDTO) {
+        LambdaQueryWrapper<Archetypes> queryWrapper = new LambdaQueryWrapper<>();
+
         if(StringUtil.isNotEmpty(archetypesQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(archetypesQueryDTO.getStartTime()));
+            queryWrapper.ge(Archetypes::getGmtCreated, DateUtil.parse(archetypesQueryDTO.getStartTime()));
         }
         if(StringUtil.isNotEmpty(archetypesQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(archetypesQueryDTO.getStartTime()));
+            queryWrapper.le(Archetypes::getGmtCreated, DateUtil.parse(archetypesQueryDTO.getStartTime()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+        if(archetypesQueryDTO.getStates() != null){
+            queryWrapper.in(Archetypes::getStatus, Arrays.asList(archetypesQueryDTO.getStates()));
+        }
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != archetypesQueryDTO.getId()){
+            queryWrapper.eq(Archetypes::getId,archetypesQueryDTO.getId());
+        }
+        if(null != archetypesQueryDTO.getAuditId()){
+            queryWrapper.eq(Archetypes::getAuditId,archetypesQueryDTO.getAuditId());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getApplicationCode())){
+            queryWrapper.eq(Archetypes::getApplicationCode,archetypesQueryDTO.getApplicationCode());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getName())){
+            queryWrapper.eq(Archetypes::getName,archetypesQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getUrl())){
+            queryWrapper.eq(Archetypes::getUrl,archetypesQueryDTO.getUrl());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getDescription())){
+            queryWrapper.eq(Archetypes::getDescription,archetypesQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getRemark())){
+            queryWrapper.eq(Archetypes::getRemark,archetypesQueryDTO.getRemark());
+        }
+        if(null != archetypesQueryDTO.getGmtCreated()){
+            queryWrapper.eq(Archetypes::getGmtCreated,archetypesQueryDTO.getGmtCreated());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getCreator())){
+            queryWrapper.eq(Archetypes::getCreator,archetypesQueryDTO.getCreator());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getCreatorCode())){
+            queryWrapper.eq(Archetypes::getCreatorCode,archetypesQueryDTO.getCreatorCode());
+        }
+        if(null != archetypesQueryDTO.getGmtModified()){
+            queryWrapper.eq(Archetypes::getGmtModified,archetypesQueryDTO.getGmtModified());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getModifier())){
+            queryWrapper.eq(Archetypes::getModifier,archetypesQueryDTO.getModifier());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getModifierCode())){
+            queryWrapper.eq(Archetypes::getModifierCode,archetypesQueryDTO.getModifierCode());
+        }
+        if(null != archetypesQueryDTO.getAuditStatus()){
+            queryWrapper.eq(Archetypes::getAuditStatus,archetypesQueryDTO.getAuditStatus());
+        }
+        if(null != archetypesQueryDTO.getStatus()){
+            queryWrapper.eq(Archetypes::getStatus,archetypesQueryDTO.getStatus());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getBak01())){
+            queryWrapper.eq(Archetypes::getBak01,archetypesQueryDTO.getBak01());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getBak02())){
+            queryWrapper.eq(Archetypes::getBak02,archetypesQueryDTO.getBak02());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getBak03())){
+            queryWrapper.eq(Archetypes::getBak03,archetypesQueryDTO.getBak03());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getBak04())){
+            queryWrapper.eq(Archetypes::getBak04,archetypesQueryDTO.getBak04());
+        }
+        if(!StringUtil.isEmpty(archetypesQueryDTO.getBak05())){
+            queryWrapper.eq(Archetypes::getBak05,archetypesQueryDTO.getBak05());
+        }
+
+
+        queryWrapper.gt(Archetypes::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(Archetypes::getGmtModified);
+
         return queryWrapper;
     }
 

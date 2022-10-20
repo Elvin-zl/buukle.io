@@ -1,7 +1,9 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +34,7 @@ import top.buukle.opensource.generator.plus.service.util.enums.DatabaseType;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -186,11 +189,11 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
         Datasources datasources = new Datasources();
         BeanUtils.copyProperties(datasourcesQueryDTO,datasources);
         // 条件
-        QueryWrapper<Datasources> queryWrapper = this.assPageParam(datasourcesQueryDTO);
+        LambdaQueryWrapper<Datasources> datasourcesLambdaQueryWrapper = this.assPageParam(datasourcesQueryDTO);
         // 查询
         PageHelper.startPage(datasourcesQueryDTO.getPageNo(),datasourcesQueryDTO.getPageSize());
-        TenantHelper.startTenant("datasources");
-        List<Datasources> list = super.list(queryWrapper);
+        TenantHelper.startTenant(SqlHelper.table(Datasources.class).getTableName());
+        List<Datasources> list = super.list(datasourcesLambdaQueryWrapper);
         PageInfo<Datasources> pageInfo = new PageInfo<>(list);
         // 分页
         List<DatasourcesVO> queryVOList = new ArrayList<>();
@@ -210,17 +213,56 @@ public class DatasourcesServiceImpl extends ServiceImpl<DatasourcesMapper, Datas
      * @Author 17600
      * @Date 2021/9/2
      */
-    private QueryWrapper<Datasources> assPageParam( DatasourcesQueryDTO datasourcesQueryDTO) {
-        QueryWrapper<Datasources> queryWrapper = new QueryWrapper<>();
+    private LambdaQueryWrapper<Datasources> assPageParam(DatasourcesQueryDTO datasourcesQueryDTO) {
+        LambdaQueryWrapper<Datasources> queryWrapper = new LambdaQueryWrapper<>();
+
         if(StringUtil.isNotEmpty(datasourcesQueryDTO.getStartTime())){
-            queryWrapper.ge("gmt_created", DateUtil.parse(datasourcesQueryDTO.getStartTime()));
+            queryWrapper.ge(Datasources::getGmtCreated, DateUtil.parse(datasourcesQueryDTO.getStartTime()));
         }
         if(StringUtil.isNotEmpty(datasourcesQueryDTO.getEndTime())){
-            queryWrapper.le("gmt_created", DateUtil.parse(datasourcesQueryDTO.getStartTime()));
+            queryWrapper.le(Datasources::getGmtCreated, DateUtil.parse(datasourcesQueryDTO.getStartTime()));
         }
-        queryWrapper.gt("status",StatusConstants.DELETED);
-        queryWrapper.orderByDesc("gmt_modified");
-        // 可按需扩展 ...
+        if(datasourcesQueryDTO.getStates() != null){
+            queryWrapper.in(Datasources::getStatus, Arrays.asList(datasourcesQueryDTO.getStates()));
+        }
+
+
+        // 此处不允许数据库生成的DTO出现基本类型属性,否则生成代码会有问题
+        if(null != datasourcesQueryDTO.getId()){
+            queryWrapper.eq(Datasources::getId,datasourcesQueryDTO.getId());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getName())){
+            queryWrapper.eq(Datasources::getName,datasourcesQueryDTO.getName());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getUrl())){
+            queryWrapper.eq(Datasources::getUrl,datasourcesQueryDTO.getUrl());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getUsername())){
+            queryWrapper.eq(Datasources::getUsername,datasourcesQueryDTO.getUsername());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getPassword())){
+            queryWrapper.eq(Datasources::getPassword,datasourcesQueryDTO.getPassword());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getDatabaseName())){
+            queryWrapper.eq(Datasources::getDatabaseName,datasourcesQueryDTO.getDatabaseName());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getDescription())){
+            queryWrapper.eq(Datasources::getDescription,datasourcesQueryDTO.getDescription());
+        }
+        if(!StringUtil.isEmpty(datasourcesQueryDTO.getRemark())){
+            queryWrapper.eq(Datasources::getRemark,datasourcesQueryDTO.getRemark());
+        }
+        if(null != datasourcesQueryDTO.getAuditStatus()){
+            queryWrapper.eq(Datasources::getAuditStatus,datasourcesQueryDTO.getAuditStatus());
+        }
+        if(null != datasourcesQueryDTO.getStatus()){
+            queryWrapper.eq(Datasources::getStatus,datasourcesQueryDTO.getStatus());
+        }
+
+
+        queryWrapper.gt(Datasources::getStatus,StatusConstants.DELETED);
+        queryWrapper.orderByDesc(Datasources::getGmtModified);
+
         return queryWrapper;
     }
 
