@@ -323,5 +323,6 @@
     <module>generator-plus-api</module>
     <module>generator-plus-commons</module>
     <module>generator-plus-utils</module>
-  </modules>
+    <module>generator-plus-rpc</module>
+</modules>
 </project>

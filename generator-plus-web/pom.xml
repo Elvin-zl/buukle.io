@@ -23,6 +23,11 @@
             <artifactId>generator-plus-controller</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>top.buukle.opensource</groupId>
+            <artifactId>generator-plus-rpc</artifactId>
+            <version>1.0.0-RELEASE</version>
+        </dependency>
         <!--web-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

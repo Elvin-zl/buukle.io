@@ -356,8 +356,6 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
     }
 
 
-    /*------------------------------------------------------↑↑↑↑通用可定制代码↑↑↑↑-------------------------------------------------------------*/
-
     /**
      * @description 生成
      * @param commonRequest
@@ -471,6 +469,28 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         ArchetypesExecute archetypesExecute = (ArchetypesExecute) archetypesExecuteService.getOne(queryWrapper);
         BeanUtils.copyProperties(archetypesExecute,archetypesExecuteVO);
         return new CommonResponse.Builder().buildSuccess(archetypesExecuteVO);
+    }
+
+
+    @Override
+    public CommonResponse<List<ArchetypesVO>> loadArchetype(CommonRequest<ArchetypesQueryDTO> commonRequest) {
+        // 转换DTO
+        ArchetypesQueryDTO archetypesQueryDTO = commonRequest.getBody();
+        Archetypes archetypes = new Archetypes();
+        BeanUtils.copyProperties(archetypesQueryDTO,archetypes);
+        // 条件
+        LambdaQueryWrapper<Archetypes> archetypesLambdaQueryWrapper = this.assPageParam(archetypesQueryDTO);
+        // 查询
+        TenantHelper.startTenant(SqlHelper.table(Archetypes.class).getTableName());
+        List<Archetypes> list = super.list(archetypesLambdaQueryWrapper);
+        // 分页
+        List<ArchetypesVO> queryVOList = new ArrayList<>();
+        for (Archetypes archetypesDB : list) {
+            ArchetypesVO archetypesVO = new ArchetypesVO();
+            BeanUtils.copyProperties(archetypesDB, archetypesVO);
+            queryVOList.add(archetypesVO);
+        }
+        return new CommonResponse.Builder().buildSuccess(queryVOList);
     }
 
     private ArchetypesExecuteUpdateDTO validateParamForGen(CommonRequest<ArchetypesExecuteUpdateDTO> commonRequest) {
