@@ -9,6 +9,7 @@ import com.github.pagehelper.PageInfo;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import top.buukle.login.cube.session.OperatorUserDTO;
 import top.buukle.login.cube.session.SessionUtils;
@@ -18,9 +19,11 @@ import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.commons.call.PageResponse;
 import top.buukle.opensource.generator.plus.commons.status.StatusConstants;
+import top.buukle.opensource.generator.plus.dtvo.dto.archetypesExecute.ArchetypesExecuteUpdateRPCDTO;
 import top.buukle.opensource.generator.plus.service.UploadService;
 import top.buukle.opensource.generator.plus.service.util.DownloadUtil;
 import top.buukle.opensource.generator.plus.service.util.FileUtil;
+import top.buukle.opensource.generator.plus.service.util.GitUtil;
 import top.buukle.opensource.generator.plus.utils.DateUtil;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.utils.SystemUtil;
@@ -58,6 +61,12 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
     private static final String FRAME_ARCHETYPE_PATH = "/frame/archetype/";
 
     private static final String ZIP_CONSTANT = "zip";
+
+    @Value("${git.username}")
+    String gitUsername;
+
+    @Value("${git.password}")
+    String gitPassword;
 
     @Autowired
     MyFilesetArchetypeGenerator myFilesetArchetypeGenerator;
@@ -432,6 +441,97 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         ZipUtil.compress(generatedArchetypeIdBatchDir,zipFile);
 
         String webZipFileUrl = zipFilePath.replaceFirst(SystemUtil.getStoreDir(), SystemConstants.SOFT_CONTEXT_PATH + "upload/temp");
+        // 上传产物
+        CommonResponse<String> stringCommonResponse = uploadService.uploadFile(zipFile);
+        if(!stringCommonResponse.isSuccess()){
+            throw new SystemException(SystemReturnEnum.GEN_ARCHETYPES_UPLOAD_ARCHETYPES_NULL,stringCommonResponse.getHead().getMsg());
+        }
+        String ossZipUrl = stringCommonResponse.getBody();
+
+        // 更新url
+        CommonRequest<ArchetypesExecuteUpdateDTO> executeUpdateDTOCommonRequestForUrl = new CommonRequest<>();
+        executeUpdateDTOCommonRequestForUrl.setHead(commonRequest.getHead());
+        ArchetypesExecuteUpdateDTO archetypesExecuteUpdateDTOForUrl = new ArchetypesExecuteUpdateDTO();
+        archetypesExecuteUpdateDTOForUrl.setUrl(ossZipUrl);
+        archetypesExecuteUpdateDTOForUrl.setId(archetypesExecuteVO.getId());
+        executeUpdateDTOCommonRequestForUrl.setBody(archetypesExecuteUpdateDTOForUrl);
+        archetypesExecuteService.updateById(executeUpdateDTOCommonRequestForUrl);
+        // 更新日志状态 - 执行成功
+        archetypesExecuteService.updateStatus(ArchetypesExecuteEnums.status.EXECUTING.value(), status.EXECUTE_SUCCESS.value(),archetypesExecuteVO.getId());
+        return new CommonResponse.Builder().buildSuccess(archetypesExecuteVO);
+    }
+
+    @Override
+    public CommonResponse<ArchetypesExecuteVO> genArchetype(CommonRequest<ArchetypesExecuteUpdateDTO> commonRequest) throws Exception{
+
+        ArchetypesExecuteUpdateRPCDTO archetypesExecuteUpdateDTO = (ArchetypesExecuteUpdateRPCDTO) this.validateParamForGen(commonRequest);
+        String genBatchUuid = UUID.randomUUID().toString().replace( StringUtil.MIDDLE, StringUtil.EMPTY);
+        Archetypes archetypes = this.getById(archetypesExecuteUpdateDTO.getArchetypesId());
+        if(archetypes == null){
+            throw new SystemException(SystemReturnEnum.GEN_ARCHETYPES_GEN_ARCHETYPES_NULL);
+        }
+        archetypesExecuteUpdateDTO.setName(archetypes.getName());
+        // 将web路径转为本地缓存路径
+        String url = archetypes.getUrl();
+        // 下载文件流
+        InputStream tempStream = DownloadUtil.getStreamDownloadOutFile(url);
+        // 声明并初始化临时文件名
+        String tempArchetypeFilePath = SystemUtil.getStoreDir() + StringUtil.BACKSLASH + genBatchUuid + StringUtil.BACKSLASH + genBatchUuid + ".jar";
+        File tempArchetypeFile = FileUtil.writeStreamToFile(tempArchetypeFilePath, tempStream);
+        // 执行日志落库
+        CommonRequest<ArchetypesExecuteUpdateDTO> executeUpdateDTOCommonRequest = new CommonRequest<>();
+        executeUpdateDTOCommonRequest.setHead(commonRequest.getHead());
+        executeUpdateDTOCommonRequest.setBody(archetypesExecuteUpdateDTO);
+        CommonResponse<ArchetypesExecuteVO> response = archetypesExecuteService.add(executeUpdateDTOCommonRequest);
+        ArchetypesExecuteVO archetypesExecuteVO = response.getBody();
+        // 更新日志状态 - 执行中
+        archetypesExecuteService.updateStatus(status.PUBLISHED.value(), status.EXECUTING.value(),archetypesExecuteVO.getId());
+        // 开始执行
+        String generatedArchetypeIdDir = SystemUtil.getStoreDir() + FRAME_ARCHETYPE_PATH + archetypesExecuteUpdateDTO.getArchetypesId() + StringUtil.BACKSLASH ;
+
+        String generatedArchetypeIdBatchDir = generatedArchetypeIdDir +  genBatchUuid + StringUtil.BACKSLASH;
+
+        MyArchetypeGenerationRequest archetypeGenerationRequest = new MyArchetypeGenerationRequest();
+
+        archetypeGenerationRequest.setInteractiveMode(false);
+        archetypeGenerationRequest.setArtifactId(archetypesExecuteUpdateDTO.getArtifactId());
+        archetypeGenerationRequest.setGroupId(archetypesExecuteUpdateDTO.getGroupId());
+        archetypeGenerationRequest.setPackage(archetypesExecuteUpdateDTO.getBasePackage());
+        archetypeGenerationRequest.setVersion(archetypesExecuteUpdateDTO.getVersion());
+
+        archetypeGenerationRequest.setOutputDirectory(generatedArchetypeIdBatchDir);
+
+        MyVelocityComponent myVelocityComponent = new MyVelocityComponent();
+
+        Properties properties = new Properties();
+        properties.setProperty("resource.loader", "jar");
+        properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
+        properties.setProperty("jar.resource.loader.path", "jar:file:" + tempArchetypeFilePath);
+
+        VelocityEngine velocityEngine = new VelocityEngine(properties);
+
+        myVelocityComponent.setEngine(velocityEngine);
+        myVelocityComponent.initialize();
+
+        archetypeGenerationRequest.setMyVelocityComponent(myVelocityComponent);
+        try {
+            myFilesetArchetypeGenerator.generateArchetype(archetypeGenerationRequest,new File(tempArchetypeFilePath));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 更新日志状态 - 执行失败
+            archetypesExecuteService.updateStatus(status.EXECUTING.value(), status.EXECUTE_FAILED.value(),archetypesExecuteVO.getId());
+            throw new SystemException(SystemReturnEnum.FAILED,e.getMessage()+e.getCause());
+        } finally {
+            // 删除临时文件
+            tempArchetypeFile.deleteOnExit();
+        }
+        String zipFilePath = generatedArchetypeIdDir + genBatchUuid + StringUtil.DOT + ZIP_CONSTANT;
+        File zipFile = new File(zipFilePath);
+        ZipUtil.compress(generatedArchetypeIdBatchDir,zipFile);
+
+        String webZipFileUrl = zipFilePath.replaceFirst(SystemUtil.getStoreDir(), SystemConstants.SOFT_CONTEXT_PATH + "upload/temp");
+        // 提交git
+        GitUtil.cloneAndAddFile(archetypesExecuteUpdateDTO.getArtifactId(), genBatchUuid,generatedArchetypeIdBatchDir,archetypesExecuteUpdateDTO.getGitLocation(),archetypesExecuteUpdateDTO.getGitBranch(),gitUsername,gitPassword);
         // 上传产物
         CommonResponse<String> stringCommonResponse = uploadService.uploadFile(zipFile);
         if(!stringCommonResponse.isSuccess()){

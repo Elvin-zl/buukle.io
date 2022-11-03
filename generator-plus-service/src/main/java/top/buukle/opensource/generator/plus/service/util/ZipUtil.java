@@ -1,7 +1,7 @@
 package top.buukle.opensource.generator.plus.service.util;
 
 
-import top.buukle.opensource.generator.plus.commons.log.BaseLogger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -23,12 +23,11 @@ import static org.springframework.util.StreamUtils.BUFFER_SIZE;
  * Date: Created in 2018/5/19 13:51
  */
 
-
+@Slf4j
 public class ZipUtil {
 
     static final int BUFFER = 8192;
 
-    private static BaseLogger LOGGER = BaseLogger.getLogger(ZipUtil.class);
     /**
      * 把文件集合打成zip压缩包
      *
@@ -39,11 +38,11 @@ public class ZipUtil {
     public static void toZip(List<File> srcFiles, File zipFile) throws RuntimeException {
         long start = System.currentTimeMillis();
         if (zipFile == null) {
-            LOGGER.error("压缩包文件名为空！");
+            log.error("压缩包文件名为空！");
             return;
         }
         if (!zipFile.getName().endsWith(".zip")) {
-            LOGGER.error("压缩包文件名异常，zipFile={}", zipFile.getPath());
+            log.error("压缩包文件名异常，zipFile={}", zipFile.getPath());
             return;
         }
         ZipOutputStream zos = null;
@@ -66,9 +65,9 @@ public class ZipUtil {
             in.close();
             out.close();
             long end = System.currentTimeMillis();
-            LOGGER.info("压缩完成，耗时：" + (end - start) + " ms");
+            log.debug("压缩完成，耗时：" + (end - start) + " ms");
         } catch (Exception e) {
-            LOGGER.error("ZipUtil toZip exception, ", e);
+            log.error("ZipUtil toZip exception, ", e);
             throw new RuntimeException("zipFile error from ZipUtils", e);
         }
     }
@@ -92,10 +91,10 @@ public class ZipUtil {
     private static void compress(File file, ZipOutputStream out, String basedir) {
         /* 判断是目录还是文件 */
         if (file.isDirectory()) {
-            System.out.println("压缩：" + basedir + file.getName());
+            log.debug("压缩：" + basedir + file.getName());
             compressDirectory(file, out, basedir);
         } else {
-            System.out.println("压缩：" + basedir + file.getName());
+            log.debug("压缩：" + basedir + file.getName());
             compressFile(file, out, basedir);
         }
     }
