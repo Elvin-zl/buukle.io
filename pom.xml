@@ -324,5 +324,6 @@
     <module>generator-plus-commons</module>
     <module>generator-plus-utils</module>
     <module>generator-plus-rpc</module>
+    <module>generator-plus-task</module>
 </modules>
 </project>
