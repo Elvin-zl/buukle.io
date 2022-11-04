@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import top.buukle.opensource.generator.plus.service.DataBackupService;
 
+import java.io.IOException;
+
 @Component
 @Slf4j
 public class DatabaseBackUpTask {
@@ -16,7 +18,7 @@ public class DatabaseBackUpTask {
     DataBackupService dataBackupService;
 
     @Scheduled( cron = "40 0/59 * * * ? ")
-    public void checkStatusCD() {
+    public void checkStatusCD() throws IOException {
         log.debug("开始执行mysql数据备份任务!");
         dataBackupService.backup();
         log.debug("执行mysql数据备份任务完成!");
