@@ -8,7 +8,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.utils.SystemUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +30,15 @@ public class GitUtil {
 		cloneCode(gitFileTempPath,gitLocation,gitBranch,gitUsername,gitPassword);
 		FileUtil.copyDirectory(generatedArchetypeIdBatchDir + StringUtil.BACKSLASH + artifactId,gitFileTempPath);
 		pushCode(gitFileTempPath,gitUsername,gitPassword);
+
+	}
+
+	public static void cloneAndAddFile(String resourcePath, String targetPath,String gitLocation, String gitBranch,String gitUsername,String gitPassword) throws IOException, InterruptedException, GitAPIException {
+		Path directory = Paths.get(targetPath);
+		Files.createDirectories(directory);
+		cloneCode(targetPath,gitLocation,gitBranch,gitUsername,gitPassword);
+		FileUtil.copyDirectory(resourcePath,targetPath);
+		pushCode(targetPath,gitUsername,gitPassword);
 
 	}
 

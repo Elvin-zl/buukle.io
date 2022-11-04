@@ -11,7 +11,7 @@ public class FileUtil {
     public static Boolean deleteFile(File file) {
         //判断文件不为null或文件目录存在
         if (file == null || !file.exists()) {
-            System.out.println("文件删除失败,请检查文件是否存在以及文件路径是否正确");
+            log.debug("文件删除失败,请检查文件是否存在以及文件路径是否正确");
             return false;
         }
         //获取目录下子文件
@@ -26,12 +26,12 @@ public class FileUtil {
                 //文件删除
                 f.delete();
                 //打印文件名
-                System.out.println("文件名：" + f.getName());
+                log.debug("文件名：" + f.getName());
             }
         }
         //文件夹删除
         file.delete();
-        System.out.println("目录名：" + file.getName());
+        log.debug("目录名：" + file.getName());
         return true;
     }
 

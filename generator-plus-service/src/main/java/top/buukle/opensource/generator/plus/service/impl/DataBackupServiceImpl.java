@@ -1,21 +1,21 @@
 package top.buukle.opensource.generator.plus.service.impl;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import top.buukle.opensource.generator.plus.service.DataBackupService;
 import top.buukle.opensource.generator.plus.service.util.FileUtil;
+import top.buukle.opensource.generator.plus.service.util.GitUtil;
+import top.buukle.opensource.generator.plus.service.util.MysqlExport;
 import top.buukle.opensource.generator.plus.utils.StringUtil;
 import top.buukle.opensource.generator.plus.utils.SystemUtil;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -23,105 +23,66 @@ public class DataBackupServiceImpl implements DataBackupService {
 
     private static final String DATABASE_BACKUP = "DATABASE_BACKUP";
 
-    private static final String DATABASE_BACKUP_ERROR = "DATABASE_BACKUP_ERROR";
+    private static final String GIT_FILE = "GIT_FILE";
 
-    private static final String SQL_SUFFIX = ".sql";
+    private static final String SQL_FILE = "SQL_FILE";
 
-    private static final String TXT_SUFFIX = "error.txt";
-
-    public static final String CMD = "mysqldump --databases -h%s -P%s -u%s -p%s %s";
-
-    @Value("${mysql.backup.host}")
+    @Value("${backup.mysql.host}")
     private String host;
-    @Value("${mysql.backup.port}")
+    @Value("${backup.mysql.port}")
     private String port;
-    @Value("${mysql.backup.username}")
+    @Value("${backup.mysql.username}")
     private String username;
-    @Value("${mysql.backup.password}")
+    @Value("${backup.mysql.password}")
     private String password;
-    @Value("${mysql.backup.database-name-list}")
+    @Value("${backup.mysql.database-name-list}")
     private String databaseNameList;
+    @Value("${backup.mysql.git-location}")
+    String gitLocation;
+
+    @Value("${git.username}")
+    String gitUsername;
+
+    @Value("${git.password}")
+    String gitPassword;
+
+    @Value("${spring.datasource.driver-class-name}")
+    String driverClassName;
 
 
 
-    private void backup(String host, String port, String username, String password, String database) {
+
+    @Override
+    public void backup() throws IOException, GitAPIException, InterruptedException {
+        // 清理历史备份文件
+        String basePath = SystemUtil.getStoreDir() + StringUtil.BACKSLASH + DATABASE_BACKUP;
         try {
-            String cmd = String.format(CMD,host,port,username,password,database);
-            Process process = Runtime.getRuntime().exec(cmd);
-            new InputStreamProcessor(process,database).start();
-            new ErrorInputStream(process).start();
+            FileUtil.deleteFile(new File(basePath));
+        } catch (Exception e) {
+            log.error("清理旧文件异常,原因:{}",e.getCause() + e.getMessage());
+        }
+        String random = UUID.randomUUID().toString().replace("-", "");
+        String sqlPath = basePath + StringUtil.BACKSLASH + random + StringUtil.BACKSLASH + SQL_FILE;
+        log.debug("sqlPath-->",sqlPath);
+        String gitPath = basePath + StringUtil.BACKSLASH + random + StringUtil.BACKSLASH + GIT_FILE;
+        log.debug("gitPath-->",gitPath);
+        Files.createDirectories(Paths.get(sqlPath));
+        Files.createDirectories(Paths.get(gitPath));
+
+        // 备份mysql
+        for (String databaseName : databaseNameList.split(StringUtil.COMMA)) {
+            this.backup(host,port,username,password,databaseName,sqlPath,driverClassName);
+        }
+        // 提交git
+        GitUtil.cloneAndAddFile(sqlPath,gitPath,gitLocation,"master",gitUsername,gitPassword);
+    }
+
+    private void backup(String host, String port, String username, String password, String database, String sqlPath,String driverClassName) {
+        try {
+            MysqlExport.export(host,port,username,password,database,sqlPath,driverClassName);
         } catch (Exception e) {
             log.error("数据库备份出现异常:{}",e.getCause() + e.getMessage());
         }
     }
 
-    @Override
-    public void backup() throws IOException {
-        // 清理历史备份文件
-        String path = SystemUtil.getStoreDir() + StringUtil.BACKSLASH +  DATABASE_BACKUP;
-        Path directory = Paths.get(path);
-        Files.createDirectories(directory);
-        FileUtil.deleteFile(new File(path));
-        // 备份
-        for (String databaseName : databaseNameList.split(StringUtil.COMMA)) {
-            this.backup(host,port,username,password,databaseName);
-        }
-        // 提交git
-
-    }
-
-    static class InputStreamProcessor extends Thread{
-
-        private final Process process;
-
-        private final String database ;
-
-        public InputStreamProcessor(Process process, String database) {
-            this.process = process;
-            this.database = database;
-        }
-
-        @SneakyThrows
-        @Override
-        public void run() {
-            String directoryPath = SystemUtil.getStoreDir() + StringUtil.BACKSLASH +  DATABASE_BACKUP;
-            Path directory = Paths.get(directoryPath);
-            Files.createDirectories(directory);
-            String path = directoryPath + StringUtil.BACKSLASH + database + SQL_SUFFIX;
-            try (InputStream is = process.getInputStream(); FileOutputStream out = new FileOutputStream(path)){
-                byte[] b = new byte[1024];
-                int len;
-                while ((len = is.read(b)) != -1) {
-                    out.write(b, 0, len);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException();
-            }
-        }
-    }
-
-    static class ErrorInputStream extends Thread{
-
-        private final Process process;
-
-        private final String path = SystemUtil.getStoreDir() + StringUtil.BACKSLASH +  DATABASE_BACKUP_ERROR + StringUtil.BACKSLASH + TXT_SUFFIX;
-
-        public ErrorInputStream(Process process) {
-            this.process = process;
-        }
-
-        @Override
-        public void run() {
-            try (InputStream is = process.getErrorStream();
-                 FileOutputStream out = new FileOutputStream(path)){
-                byte[] b = new byte[1024];
-                int len;
-                while ((len = is.read(b)) != -1) {
-                    out.write(b, 0, len);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException();
-            }
-        }
-    }
 }
