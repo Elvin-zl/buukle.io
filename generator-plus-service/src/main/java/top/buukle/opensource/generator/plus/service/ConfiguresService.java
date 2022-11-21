@@ -3,6 +3,7 @@ package top.buukle.opensource.generator.plus.service;
 import top.buukle.opensource.generator.plus.commons.call.CommonRequest;
 import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.commons.mvc.service.BaseService;
+import top.buukle.opensource.generator.plus.dtvo.vo.configuresExecute.ConfiguresExecuteVO;
 
 /**
 * @author elvin
@@ -10,6 +11,6 @@ import top.buukle.opensource.generator.plus.commons.mvc.service.BaseService;
 */
 public interface ConfiguresService<MODEL, VO,QUERYDTO,UPDATEDTO> extends BaseService<MODEL, VO,QUERYDTO,UPDATEDTO> {
 
-    CommonResponse<Boolean> gen(CommonRequest<QUERYDTO> commonRequest);
+    CommonResponse<ConfiguresExecuteVO> gen(CommonRequest<QUERYDTO> commonRequest);
 
 }

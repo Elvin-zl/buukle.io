@@ -477,7 +477,7 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
      * @Date 2021/9/4
      */
     @Override
-    public CommonResponse<Boolean> gen(CommonRequest<ConfiguresQueryDTO> commonRequest) {
+    public CommonResponse<ConfiguresExecuteVO> gen(CommonRequest<ConfiguresQueryDTO> commonRequest) {
         ConfiguresQueryDTO configuresQueryDTO = commonRequest.getBody();
         // 校验参数
         validateGenParam(configuresQueryDTO);
@@ -533,10 +533,12 @@ public class ConfiguresServiceImpl extends ServiceImpl<ConfiguresMapper, Configu
         configuresExecuteQueryForUpdate.setId(configuresExecuteVO.getId());
 
         configuresExecuteQueryForUpdate.setZipDownUrl(zipDownloadUrl);
+        configuresExecuteVO.setZipDownUrl(zipDownloadUrl);
         configuresExecuteService.updateById(configuresExecuteQueryForUpdate);
         // 更新执行记录状态为执行成功
         configuresExecuteService.updateStatus(ConfiguresExecuteEnums.status.EXECUTING.value(),ConfiguresExecuteEnums.status.EXECUTE_SUCCESS.value(),configuresExecuteVO.getId());
-        return new CommonResponse.Builder().buildSuccess();
+
+        return new CommonResponse.Builder().buildSuccess(configuresExecuteVO);
     }
 
     private String doGen(Configures configures, List<ConfiguresTemplatesRelation> configuresTemplatesRelations) throws IOException {

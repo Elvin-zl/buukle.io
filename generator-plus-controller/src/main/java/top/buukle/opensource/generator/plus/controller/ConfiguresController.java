@@ -13,6 +13,7 @@ import top.buukle.opensource.generator.plus.commons.call.CommonResponse;
 import top.buukle.opensource.generator.plus.dtvo.dto.configures.ConfiguresQueryDTO;
 import top.buukle.opensource.generator.plus.dtvo.dto.configures.ConfiguresUpdateDTO;
 import top.buukle.opensource.generator.plus.dtvo.vo.configures.ConfiguresVO;
+import top.buukle.opensource.generator.plus.dtvo.vo.configuresExecute.ConfiguresExecuteVO;
 import top.buukle.opensource.generator.plus.entity.Configures;
 import top.buukle.opensource.generator.plus.service.ConfiguresService;
 import top.buukle.opensource.generator.plus.service.util.ResponseConvertUtil;
@@ -78,7 +79,7 @@ public class ConfiguresController {
     @PostMapping("/gen")
     @ResponseBody
     @ApiOperation(value = "生成", httpMethod = "POST")
-    public CommonResponse<Boolean> gen(@RequestBody CommonRequest<ConfiguresQueryDTO> commonRequest) {
+    public CommonResponse<ConfiguresExecuteVO> gen(@RequestBody CommonRequest<ConfiguresQueryDTO> commonRequest) {
         return configuresService.gen(commonRequest);
     }
 
