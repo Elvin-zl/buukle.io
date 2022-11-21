@@ -547,6 +547,7 @@ public class ArchetypesServiceImpl extends ServiceImpl<ArchetypesMapper, Archety
         archetypesExecuteUpdateDTOForUrl.setId(archetypesExecuteVO.getId());
         executeUpdateDTOCommonRequestForUrl.setBody(archetypesExecuteUpdateDTOForUrl);
         archetypesExecuteService.updateById(executeUpdateDTOCommonRequestForUrl);
+        archetypesExecuteVO.setUrl(ossZipUrl);
         // 更新日志状态 - 执行成功
         archetypesExecuteService.updateStatus(ArchetypesExecuteEnums.status.EXECUTING.value(), status.EXECUTE_SUCCESS.value(),archetypesExecuteVO.getId());
         return new CommonResponse.Builder().buildSuccess(archetypesExecuteVO);
